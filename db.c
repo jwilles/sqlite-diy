@@ -8,6 +8,7 @@ struct InputBuffer_t {
   size_t buffer_length;
   ssize_t input_length;
 };
+
 typedef struct InputBuffer_t InputBuffer;
 
 InputBuffer* new_input_buffer() {
@@ -22,8 +23,7 @@ InputBuffer* new_input_buffer() {
 void print_prompt() { printf("db > "); }
 
 void read_input(InputBuffer* input_buffer) {
-  ssize_t bytes_read =
-      getline(&(input_buffer->buffer), &(input_buffer->buffer_length), stdin);
+  ssize_t bytes_read = getline(&(input_buffer->buffer), &(input_buffer->buffer_length), stdin);
 
   if (bytes_read <= 0) {
     printf("Error reading input\n");
