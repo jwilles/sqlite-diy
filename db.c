@@ -15,11 +15,24 @@ enum Meta_Command_Result_t {
   META_COMMAND_SUCCESS,
   META_COMMAND_UNRECOGNIZED_COMMAND
 };
-
 typedef enum Meta_Command_Result_t MetaCommandResult;
 
-enum Prepare_Result_t { PREPARE_SUCCESS, PREPARE_UNRECOGNIZED_STATEMENT };
+enum Prepare_Result_t { 
+  PREPARE_SUCCESS, 
+  PREPARE_UNRECOGNIZED_STATEMENT 
+};
 typedef enum Prepare_Result_t PrepareResult;
+
+enum Statement_Type_t {
+  STATEMENT_INSERT,
+  STATEMENT_SELECT
+};
+typedef enum Statement_Type_t StatementType;
+
+struct Statement_t {
+  StatementType type;
+};
+typedef struct Statement_t Statement; 
 
 InputBuffer* new_input_buffer() {
   InputBuffer* input_buffer = malloc(sizeof(InputBuffer));
@@ -38,6 +51,30 @@ MetaCommandResult do_meta_command(InputBuffer* input_buffer) {
   }
 }
 
+PrepareResult prepare_statement(InputBuffer* input_buffer, Statement* statement) {
+  if (strncmp(input_buffer->buffer, "insert", 6) == 0) {
+    statement->type = STATEMENT_INSERT;
+    return PREPARE_SUCCESS;
+  }
+  if (strcmp(input_buffer->buffer, "select") == 0) {
+    statement->type= STATEMENT_SELECT; 
+    return PREPARE_SUCCESS;
+  }
+
+  return PREPARE_UNRECOGNIZED_STATEMENT;
+}
+
+void execute_statement(Statement* statement) {
+  switch (statement->type) {
+    case (STATEMENT_INSERT):
+      printf("This is a insert statement. \n");
+      break;
+    case (STATEMENT_SELECT):
+      printf("This is a select statement. \n");
+      break;
+  }
+}
+
 void print_prompt() { printf("db > "); }
 
 void read_input(InputBuffer* input_buffer) {
@@ -53,17 +90,13 @@ void read_input(InputBuffer* input_buffer) {
   input_buffer->buffer[bytes_read - 1] = 0;
 }
 
-
-
-
-
 int main(int argc, char* argv[]) {
   InputBuffer* input_buffer = new_input_buffer();
   while (true) {
     print_prompt();
     read_input(input_buffer);
 
-    if (strcmp(input_buffer->buffer[0], ".") == 0){
+    if (input_buffer->buffer[0] == "."){
       switch (do_meta_command(input_buffer)) {
         case (META_COMMAND_SUCCESS):
           continue;
