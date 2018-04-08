@@ -5,7 +5,6 @@
 
 #define size_of_attribute(Struct, Attribute) sizeof(((Struct*)0)->Attribute)
 
-
 const uint32_t ID_SIZE = size_of_attribute(Row, id);
 const uint32_t USERNAME_SIZE = size_of_attribute(Row, username);
 const uint32_t EMAIL_SIZE = size_of_attribure(Row, email);
@@ -77,6 +76,17 @@ void deserialize_row(void* source, Row* destination) {
   memcpy(&(destination->email), source + EMAIL_OFFSET, EMAIL_SIZE);
 } 
 
+void* row_slot(Table* table, uint32_t row_num) {
+  uint32_t page_num = row_num / ROWS_PER_PAGE;
+  void* page = table->pages[page_num];
+  if (!page) {
+    page = table->pages[page_num] = malloc(PAGE_SIZE);
+  }
+  uint32_t row_offset = row_num % ROWS_PER_PAGE;
+  uint32_t byte_offset = row_offset * ROW_SIZE;
+  return page + byte_offset;
+}
+
 InputBuffer* new_input_buffer() {
   InputBuffer* input_buffer = malloc(sizeof(InputBuffer));
   input_buffer->buffer = NULL;
@@ -115,16 +125,18 @@ PrepareResult prepare_statement(InputBuffer* input_buffer, Statement* statement)
   return PREPARE_UNRECOGNIZED_STATEMENT;
 }
 
-void execute_statement(Statement* statement) {
-  switch (statement->type) {
-    case (STATEMENT_INSERT):
-      printf("This is a insert statement. \n");
-      break;
-    case (STATEMENT_SELECT):
-      printf("This is a select statement. \n");
-      break;
-  }
-}
+
+
+//void execute_statement(Statement* statement) {
+//  switch (statement->type) {
+//    case (STATEMENT_INSERT):
+//      printf("This is a insert statement. \n");
+//      break;
+//    case (STATEMENT_SELECT):
+//      printf("This is a select statement. \n");
+//      break;
+//  }
+//}
 
 void print_prompt() { printf("db > "); }
 
