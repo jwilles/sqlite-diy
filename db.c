@@ -159,16 +159,16 @@ ExecuteResult execute_statement(Statement* statement, Table* table) {
   }
 }
 
-//void execute_statement(Statement* statement) {
-//  switch (statement->type) {
-//    case (STATEMENT_INSERT):
-//      printf("This is a insert statement. \n");
-//      break;
-//    case (STATEMENT_SELECT):
-//      printf("This is a select statement. \n");
-//      break;
-//  }
-//}
+Table* new_table() {
+  Table* table = malloc(sizeof(Table));
+  table->num_rows = 0;
+
+  return table;
+}
+
+void print_row(Row* row) {
+  printf("%d, %s, %s \n", row->id, row->username, row->email);
+}
 
 void print_prompt() { printf("db > "); }
 
@@ -186,6 +186,7 @@ void read_input(InputBuffer* input_buffer) {
 }
 
 int main(int argc, char* argv[]) {
+  Table* table = new_table();
   InputBuffer* input_buffer = new_input_buffer();
   while (true) {
     print_prompt();
