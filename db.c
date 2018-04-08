@@ -48,6 +48,7 @@ typedef enum Meta_Command_Result_t MetaCommandResult;
 
 enum Prepare_Result_t { 
   PREPARE_SUCCESS, 
+  PREPARE_SYNTAX_ERROR,
   PREPARE_UNRECOGNIZED_STATEMENT 
 };
 typedef enum Prepare_Result_t PrepareResult;
@@ -63,6 +64,9 @@ struct Statement_t {
   Row row_to_insert;
 };
 typedef struct Statement_t Statement; 
+
+enum ExecuteResult_t { Execute_Success, Execute_Table_Full};
+typedef enum ExecuteResult_t ExecuteResult;
 
 void serialize_row(Row* source, void* destination) {
   memcpy(destination + ID_OFFSET, &(source->id), ID_SIZE);
@@ -125,7 +129,35 @@ PrepareResult prepare_statement(InputBuffer* input_buffer, Statement* statement)
   return PREPARE_UNRECOGNIZED_STATEMENT;
 }
 
+ExceuteResult execute_insert(Statement* statement, Table* table) {
+  if (table->num_rows >= TABLE_MAX_ROWS) {
+    return EXECUTE_TABLE_FULL;
+  }
+  Row* row_to_insert = &(statement->row_to_insert);
 
+  serialize_row(row_to_insert, row_slot(table, table->num_rows));
+  table->num_rows += 1;
+
+  return EXECUTE_SUCCESS;
+}
+
+ExecuteResult execute_select(Statement* statement, Table* table) {
+  Row row;
+  for (uint32_t i = 0; i < table->num_rows; i++) {
+    deserialize_row(row_slot(table, i), Row);
+    print_row(&row); 
+  }
+  return EXECUTE_SUCCESS;
+}
+
+ExecuteResult execute_statement(Statement* statement, Table* table) {
+  switch (statement->type) {
+    case (STATEMENT_INSERT):
+      return execute_insert(statement, table);
+    case (STAEMENT_SELECT):
+      return execute_select(statement, table);
+  }
+}
 
 //void execute_statement(Statement* statement) {
 //  switch (statement->type) {
