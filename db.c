@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+
 const uint32_t COLUMN_USERNAME_SIZE = 32;
 const uint32_t COLUMN_EMAIL_SIZE = 255;
 
